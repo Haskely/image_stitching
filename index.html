@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼长图工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #1d1d1f;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #86868b;
+            font-size: 1.1em;
+        }
+
+        .upload-area {
+            border: 2px dashed #007aff;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: white;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: #f8f9ff;
+            border-color: #005ce6;
+        }
+
+        .upload-area.dragover {
+            background: #e8f4ff;
+            border-color: #005ce6;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #007aff;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: #86868b;
+            font-size: 0.9em;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .images-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .images-list {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-area {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1d1d1f;
+        }
+
+        .image-item {
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .crop-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .crop-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .crop-control label {
+            min-width: 80px;
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+
+        .crop-control input[type="range"] {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: #d1d1d6;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .crop-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007aff;
+            cursor: pointer;
+        }
+
+        .crop-control span {
+            min-width: 40px;
+            text-align: right;
+            font-size: 0.9em;
+            color: #86868b;
+        }
+
+        .remove-btn {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: #d70015;
+        }
+
+        .final-preview {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #005ce6;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #d1d1d6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.secondary {
+            background: #8e8e93;
+        }
+
+        .btn.secondary:hover {
+            background: #6d6d70;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #86868b;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        @media (max-width: 768px) {
+            .images-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .upload-area {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>拼长图工具</h1>
+            <p>支持多张图片竖向拼接，每张图片独立裁切</p>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">点击或拖拽上传图片</div>
+            <div class="upload-hint">支持 JPG、PNG、WebP 格式</div>
+            <input type="file" id="fileInput" multiple accept="image/*">
+        </div>
+
+        <div class="images-section">
+            <div class="images-list">
+                <div class="section-title">图片列表 (<span id="imageCount">0</span>)</div>
+                <div id="imagesList" class="empty-state">
+                    请上传图片开始拼接
+                </div>
+            </div>
+
+            <div class="preview-area">
+                <div class="section-title">预览效果</div>
+                <canvas id="previewCanvas" class="final-preview" style="display: none;"></canvas>
+                <div id="previewEmpty" class="empty-state">
+                    上传图片后预览效果将在此显示
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="generateBtn" onclick="generatePreview()" disabled>生成预览</button>
+            <button class="btn secondary" id="clearBtn" onclick="clearAll()">清空所有</button>
+            <button class="btn" id="downloadBtn" onclick="downloadImage()" disabled>下载图片</button>
+        </div>
+    </div>
+
+    <script>
+        let imageFiles = [];
+        let imageData = [];
+
+        // DOM 元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagesList = document.getElementById('imagesList');
+        const imageCount = document.getElementById('imageCount');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const previewEmpty = document.getElementById('previewEmpty');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // 初始化事件监听器
+        function initEventListeners() {
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+            fileInput.addEventListener('change', handleFileSelect);
+        }
+
+        // 拖拽处理
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            addImages(files.filter(file => file.type.startsWith('image/')));
+        }
+
+        // 文件选择处理
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            addImages(files);
+        }
+
+        // 添加图片
+        function addImages(files) {
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const imageObj = {
+                                id: Date.now() + Math.random(),
+                                file: file,
+                                src: e.target.result,
+                                width: img.width,
+                                height: img.height,
+                                cropTop: 0,
+                                cropBottom: 100,
+                                name: file.name
+                            };
+                            imageData.push(imageObj);
+                            updateUI();
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // 更新UI
+        function updateUI() {
+            updateImagesList();
+            updateControls();
+            generatePreview();
+        }
+
+        // 更新图片列表
+        function updateImagesList() {
+            imageCount.textContent = imageData.length;
+            
+            if (imageData.length === 0) {
+                imagesList.innerHTML = '<div class="empty-state">请上传图片开始拼接</div>';
+                return;
+            }
+
+            imagesList.innerHTML = imageData.map((img, index) => `
+                <div class="image-item" data-id="${img.id}">
+                    <img src="${img.src}" alt="${img.name}" class="image-preview">
+                    <div class="crop-controls">
+                        <div class="crop-control">
+                            <label>上边距:</label>
+                            <input type="range" min="0" max="100" value="${img.cropTop}" 
+                                   oninput="updateCrop(${img.id}, 'cropTop', this.value)">
+                            <span>${img.cropTop}%</span>
+                        </div>
+                        <div class="crop-control">
+                            <label>下边距:</label>
+                            <input type="range" min="0" max="100" value="${100 - img.cropBottom}" 
+                                   oninput="updateCrop(${img.id}, 'cropBottom', ${100} - this.value)">
+                            <span>${100 - img.cropBottom}%</span>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeImage(${img.id})">删除图片</button>
+                </div>
+            `).join('');
+        }
+
+        // 更新裁切参数
+        function updateCrop(id, property, value) {
+            const img = imageData.find(img => img.id === id);
+            if (img) {
+                img[property] = parseFloat(value);
+                updateUI();
+            }
+        }
+
+        // 删除图片
+        function removeImage(id) {
+            imageData = imageData.filter(img => img.id !== id);
+            updateUI();
+        }
+
+        // 更新控制按钮状态
+        function updateControls() {
+            const hasImages = imageData.length > 0;
+            generateBtn.disabled = !hasImages;
+            downloadBtn.disabled = !hasImages;
+        }
+
+        // 生成预览
+        function generatePreview() {
+            if (imageData.length === 0) {
+                previewCanvas.style.display = 'none';
+                previewEmpty.style.display = 'block';
+                return;
+            }
+
+            const canvas = previewCanvas;
+            const ctx = canvas.getContext('2d');
+
+            // 计算画布尺寸
+            let maxWidth = 0;
+            let totalHeight = 0;
+
+            const processedImages = imageData.map(imgData => {
+                const cropTopPx = (imgData.height * imgData.cropTop) / 100;
+                const cropBottomPx = (imgData.height * imgData.cropBottom) / 100;
+                const croppedHeight = cropBottomPx - cropTopPx;
+                
+                maxWidth = Math.max(maxWidth, imgData.width);
+                totalHeight += croppedHeight;
+
+                return {
+                    ...imgData,
+                    cropTopPx,
+                    cropBottomPx,
+                    croppedHeight
+                };
+            });
+
+            // 设置画布尺寸
+            canvas.width = maxWidth;
+            canvas.height = totalHeight;
+
+            // 绘制图片
+            let currentY = 0;
+            let loadedCount = 0;
+
+            processedImages.forEach(imgData => {
+                const img = new Image();
+                img.onload = () => {
+                    // 绘制裁切后的图片部分
+                    ctx.drawImage(
+                        img,
+                        0, imgData.cropTopPx, // 源图片裁切起始位置
+                        imgData.width, imgData.croppedHeight, // 源图片裁切尺寸
+                        0, currentY, // 目标画布位置
+                        maxWidth, imgData.croppedHeight // 目标画布尺寸
+                    );
+                    
+                    loadedCount++;
+                    if (loadedCount === processedImages.length) {
+                        // 所有图片加载完成，显示预览
+                        previewCanvas.style.display = 'block';
+                        previewEmpty.style.display = 'none';
+                    }
+                };
+                img.src = imgData.src;
+                currentY += imgData.croppedHeight;
+            });
+        }
+
+        // 下载图片
+        function downloadImage() {
+            if (imageData.length === 0) return;
+
+            const canvas = previewCanvas;
+            const link = document.createElement('a');
+            link.download = `拼长图_${new Date().getTime()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // 清空所有
+        function clearAll() {
+            if (confirm('确定要清空所有图片吗？')) {
+                imageData = [];
+                fileInput.value = '';
+                updateUI();
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            initEventListeners();
+            updateUI();
+        });
+    </script>
+</body>
+</html>
