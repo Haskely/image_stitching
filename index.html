@@ -264,6 +264,9 @@
             display: block;
             margin: 0 auto;
             width: 100%;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            -webkit-font-smoothing: antialiased;
         }
 
         .action-buttons {
@@ -760,11 +763,17 @@
                 maxWidth = Math.max(maxWidth, img.width);
             });
             
-            // 创建canvas
+            // 创建高分辨率canvas以确保图片质量
             const canvas = document.createElement('canvas');
-            canvas.width = maxWidth;
-            canvas.height = totalHeight;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = maxWidth * dpr;
+            canvas.height = totalHeight * dpr;
             const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            
+            // 设置高质量渲染
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             
             // 绘制图片
             let loadedCount = 0;
@@ -789,14 +798,24 @@
                         previewCanvas.className = 'preview-canvas';
                         const previewCtx = previewCanvas.getContext('2d');
                         
-                        // 根据容器宽度调整预览尺寸，以获得更高分辨率
+                        // 根据容器宽度调整预览尺寸，考虑设备像素比以获得更高分辨率
                         const containerWidth = previewContainer.offsetWidth;
+                        const dpr = window.devicePixelRatio || 1; // 获取设备像素比
                         const scale = containerWidth / maxWidth;
             
-                        previewCanvas.width = containerWidth;
-                        previewCanvas.height = totalHeight * scale;
-            
-                        previewCtx.drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height);
+                        // 设置canvas的实际尺寸（考虑设备像素比）
+                        previewCanvas.width = containerWidth * dpr;
+                        previewCanvas.height = totalHeight * scale * dpr;
+                        
+                        // 设置canvas的CSS尺寸
+                        previewCanvas.style.width = containerWidth + 'px';
+                        previewCanvas.style.height = (totalHeight * scale) + 'px';
+                        
+                        // 缩放上下文以适应高DPI
+                        previewCtx.scale(dpr, dpr);
+                        
+                        // 绘制时使用CSS尺寸
+                        previewCtx.drawImage(canvas, 0, 0, containerWidth, totalHeight * scale);
                         
                         previewContainer.innerHTML = '';
                         previewContainer.appendChild(previewCanvas);
@@ -825,11 +844,17 @@
                 maxWidth = Math.max(maxWidth, img.width);
             });
             
-            // 创建导出canvas
+            // 创建高分辨率导出canvas
             const canvas = document.createElement('canvas');
-            canvas.width = maxWidth;
-            canvas.height = totalHeight;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = maxWidth * dpr;
+            canvas.height = totalHeight * dpr;
             const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            
+            // 设置高质量渲染
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
             
             // 绘制所有图片
             let loadedCount = 0;
