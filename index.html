@@ -8,6 +8,41 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>长图片拼接工具 - 支持拖拽裁剪</title>
     <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #5558e3;
+            --primary-light: #e0e7ff;
+            --secondary-color: #64748b;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #f8fafc;
+                --bg-secondary: #f1f5f9;
+                --bg-card: #ffffff;
+                --text-primary: #1e293b;
+                --text-secondary: #64748b;
+                --border-color: #e2e8f0;
+                --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+                --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -20,62 +55,129 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             overflow-x: hidden;
             touch-action: pan-y;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-width: 320px; /* 确保最小宽度 */
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 15px;
+            padding: 20px;
+            width: 100%; /* 确保占满可用宽度 */
+            box-sizing: border-box; /* 包含 padding 在内 */
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 20px;
-            color: #0056b3;
-            font-size: 24px;
+            margin-bottom: 32px;
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
         }
 
         .upload-area {
-            background-color: #fff;
-            border: 2px dashed #007aff;
-            border-radius: 12px;
-            padding: 30px 20px;
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 48px 24px;
             text-align: center;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+            margin-bottom: 32px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a78bfa 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .upload-area.dragover,
         .upload-area:active {
-            border-color: #0056b3;
-            background-color: #e9ecef;
+            border-color: var(--primary-color);
             transform: scale(0.98);
         }
 
+        .upload-area.dragover::before {
+            opacity: 0.05;
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            opacity: 0.5;
+        }
+
         .upload-btn {
-            display: inline-block;
-            padding: 14px 28px;
-            background-color: #007aff;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #8b5cf6 50%, #7c3aed 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.3s ease;
             -webkit-tap-highlight-color: transparent;
-            box-shadow: 0 4px 8px rgba(0, 122, 255, 0.2);
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px 0 rgba(99, 102, 241, 0.5);
         }
 
         .upload-btn:active {
-            transform: scale(0.95);
-            background-color: #0056b3;
+            transform: scale(0.98);
+        }
+
+        .upload-btn:active::before {
+            width: 300px;
+            height: 300px;
         }
 
         input[type="file"] {
@@ -83,17 +185,26 @@
         }
 
         .images-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
         .edit-area,
         .preview-area {
-            background-color: #fff;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(145deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.02) 100%);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow-lg), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .edit-area:hover,
+        .preview-area:hover {
+            box-shadow: var(--shadow-xl);
         }
 
         .edit-area {
@@ -105,10 +216,21 @@
         }
 
         .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #a78bfa 100%);
+            border-radius: 2px;
         }
 
         /* 图片项容器 - 移除所有间距，使其紧密贴合 */
@@ -128,11 +250,18 @@
             max-width: 400px;
             margin: 0 auto;
             overflow: hidden;
-            /* 限制手柄不超出范围 */
             border: none;
-            background-color: #f9f9f9;
+            background: linear-gradient(145deg, var(--bg-secondary) 0%, rgba(99, 102, 241, 0.05) 100%);
             touch-action: none;
-            transition: height 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            box-sizing: border-box;
+        }
+
+        .image-crop-container:hover {
+            box-shadow: var(--shadow-lg);
         }
 
         /* 裁剪容器的遮罩层 - 隐藏超出裁剪区域的部分 */
@@ -156,62 +285,69 @@
         /* 裁剪区域指示器 - 仅作为视觉参考 */
         .crop-area {
             position: absolute;
-            border: 2px solid #007aff;
-            background-color: rgba(0, 122, 255, 0.15);
+            border: 2px solid var(--primary-color);
+            background-color: transparent;
             cursor: move;
             width: 100%;
             touch-action: none;
             pointer-events: none;
-            /* 不再直接交互 */
             z-index: 5;
+            box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.3);
         }
 
         /* 拖拽手柄 - 限制在图片范围内 */
         .crop-handle {
             position: absolute;
             width: 80px;
-            height: 30px;
-            background-color: #007aff;
-            border: 2px solid #fff;
-            border-radius: 15px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #8b5cf6 50%, #7c3aed 100%);
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
             touch-action: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s ease;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.2), inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10;
             cursor: row-resize;
             pointer-events: auto;
+            overflow: hidden;
+        }
+
+        .crop-handle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.6), 0 0 0 2px rgba(99, 102, 241, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+            background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, var(--primary-color) 100%);
         }
 
         .crop-handle:active {
-            transform: scale(1.15);
-            background-color: #0056b3;
+            transform: scale(1.05);
         }
 
         .crop-handle.top {
             top: 0;
-            left: 39%;
+            left: 39%; /* 为了与下边错开，避免图片裁剪过窄时重叠 */
             transform: translateX(-50%);
             cursor: n-resize;
         }
 
         .crop-handle.bottom {
             bottom: 0;
-            left: 61%;
+            left: 61%; /* 为了与上边错开，避免图片裁剪过窄时重叠 */
             transform: translateX(-50%);
             cursor: s-resize;
         }
 
         /* 添加手柄视觉提示 */
         .crop-handle::before {
-            content: '···';
+            content: '';
             position: absolute;
             left: 50%;
             top: 50%;
+            width: 24px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 2px;
             transform: translate(-50%, -50%);
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            letter-spacing: 2px;
+            box-shadow: 0 -6px 0 rgba(255, 255, 255, 0.95), 0 6px 0 rgba(255, 255, 255, 0.95);
         }
 
         /* 触摸设备上增加触摸区域 */
@@ -226,36 +362,49 @@
             .crop-handle.bottom::before {
                 font-size: 18px;
             }
+
+            /* 防止手柄超出屏幕边缘 */
+            .crop-handle.top,
+            .crop-handle.bottom {
+                max-width: calc(100% - 20px);
+            }
         }
 
         /* 控制按钮组 - 浮动在图片内部 */
         .image-controls {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 12px;
+            right: 12px;
             display: flex;
-            gap: 6px;
+            gap: 8px;
             z-index: 15;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 6px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.98) 0%, rgba(51, 65, 85, 0.98) 100%);
+            backdrop-filter: blur(20px) saturate(180%);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .control-btn {
             padding: 8px 12px;
-            font-size: 13px;
+            font-size: 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
             -webkit-tap-highlight-color: transparent;
-            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
         }
 
         .control-btn:hover {
-            opacity: 1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .control-btn:active {
@@ -263,32 +412,37 @@
         }
 
         .remove-btn {
-            background-color: #f44336;
+            background-color: var(--danger-color);
             color: white;
         }
 
-        .remove-btn:active {
-            background-color: #da190b;
+        .remove-btn:hover {
+            background-color: #dc2626;
         }
 
         .move-btn {
-            background-color: #2196F3;
+            background-color: var(--primary-color);
             color: white;
         }
 
-        .move-btn:active {
-            background-color: #0b7dda;
+        .move-btn:hover {
+            background-color: var(--primary-hover);
         }
 
         .preview-canvas {
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             display: block;
             margin: 0 auto;
             width: 100%;
+            max-width: 100%;
+            height: auto;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
             -webkit-font-smoothing: antialiased;
+            box-shadow: var(--shadow-md);
+            background: var(--bg-secondary);
+            box-sizing: border-box;
         }
 
         .action-buttons {
@@ -300,95 +454,236 @@
         }
 
         .action-btn {
-            padding: 14px 24px;
+            padding: 12px 24px;
             font-size: 16px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
             -webkit-tap-highlight-color: transparent;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
         }
 
         .action-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.98);
+        }
+
+        .action-btn:active::before {
+            width: 300px;
+            height: 300px;
         }
 
         .export-btn {
-            background-color: #007aff;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
             color: white;
             flex: 1;
-            min-width: 120px;
-            box-shadow: 0 4px 8px rgba(0, 122, 255, 0.2);
+            min-width: 140px;
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.4);
         }
 
-        .export-btn:active {
-            background-color: #0056b3;
+        .export-btn:hover {
+            box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.5);
+        }
+
+        .export-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .clear-btn {
-            background-color: #f44336;
-            color: white;
+            background: var(--bg-secondary);
+            color: var(--danger-color);
+            border: 2px solid var(--danger-color);
             flex: 1;
-            min-width: 120px;
+            min-width: 140px;
         }
 
-        .clear-btn:active {
-            background-color: #da190b;
+        .clear-btn:hover {
+            background: var(--danger-color);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.4);
         }
 
         .empty-state {
             text-align: center;
-            color: #999;
-            padding: 40px 20px;
-            font-size: 14px;
+            color: var(--text-secondary);
+            padding: 60px 20px;
+            font-size: 16px;
+        }
+
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            opacity: 0.3;
         }
 
         .loading-spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007aff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
         }
 
         @keyframes spin {
             0% {
                 transform: rotate(0deg);
             }
-
             100% {
                 transform: rotate(360deg);
             }
         }
 
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .image-item {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
         /* 移动端样式优化 */
         @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 22px;
+                margin-bottom: 20px;
+                padding: 0 10px;
+            }
+
+            .upload-area {
+                padding: 24px 16px;
+                margin-bottom: 20px;
+                border-radius: 12px;
+            }
+
+            .upload-area p {
+                font-size: 16px !important;
+            }
+
+            .upload-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            .upload-btn {
+                padding: 10px 20px;
+                font-size: 15px;
+            }
+
+            .images-container {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .section-title {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+
+            .edit-area,
+            .preview-area {
+                padding: 16px;
+                border-radius: 16px;
+            }
+
+            /* 调整图片容器最大宽度 */
+            .image-crop-container {
+                max-width: calc(100vw - 64px); /* 考虑容器padding */
+                width: 100%;
+            }
+
+            .control-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+                min-width: 30px;
+                height: 30px;
+            }
+
+            .action-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+                min-width: 120px;
+            }
+
+            /* 优化触摸手柄 */
+            .crop-handle {
+                width: 90px;
+                height: 32px;
+            }
+
+            /* 控制按钮组位置调整 */
+            .image-controls {
+                top: 8px;
+                right: 8px;
+                padding: 6px;
+                gap: 6px;
+                border-radius: 10px;
+            }
+        }
+
+        /* 超小屏幕优化 */
+        @media (max-width: 480px) {
             .container {
                 padding: 10px;
             }
 
             h1 {
                 font-size: 20px;
-                margin-bottom: 15px;
+                margin-bottom: 16px;
             }
 
             .upload-area {
-                padding: 25px 15px;
-                margin-bottom: 15px;
+                padding: 20px 12px;
             }
 
-            .images-container {
-                flex-direction: column;
-                gap: 10px;
+            .upload-area p {
+                font-size: 14px !important;
+                margin-bottom: 16px !important;
             }
 
-            .section-title {
+            .upload-btn {
+                padding: 8px 16px;
                 font-size: 14px;
-                margin-bottom: 10px;
             }
 
             .edit-area,
@@ -396,84 +691,181 @@
                 padding: 12px;
             }
 
-            .control-btn {
-                padding: 8px 14px;
-                font-size: 13px;
+            /* 进一步调整图片容器 */
+            .image-crop-container {
+                max-width: calc(100vw - 44px);
             }
 
             .action-btn {
-                padding: 12px 20px;
-                font-size: 14px;
+                padding: 8px 12px;
+                font-size: 13px;
+                min-width: 100px;
             }
 
-            .preview-canvas {}
+            /* 确保按钮在小屏幕上换行 */
+            .action-buttons {
+                gap: 8px;
+            }
+
+            .export-btn,
+            .clear-btn {
+                min-width: 100px;
+                flex: 1 1 45%;
+            }
         }
 
         /* 横屏模式优化 */
-        @media (max-height: 500px) {
+        @media (max-height: 600px) and (orientation: landscape) {
             h1 {
                 margin-bottom: 10px;
                 font-size: 18px;
             }
 
             .upload-area {
-                padding: 15px 10px;
+                padding: 15px 20px;
                 margin-bottom: 10px;
             }
 
-            .preview-canvas {}
+            .upload-icon {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 8px;
+            }
+
+            .images-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+
+            .edit-area,
+            .preview-area {
+                padding: 12px;
+            }
+
+            .section-title {
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+
+            /* 横屏时限制高度 */
+            .image-crop-container {
+                max-height: calc(100vh - 200px);
+            }
         }
 
         /* 触摸提示 */
         .touch-hint {
-            position: absolute;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 12px;
+            position: fixed;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
             white-space: nowrap;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
         }
 
         .touch-hint.show {
             opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>🖼️ 图片拼接工具</h1>
+        <h1>✨ 图片拼接工具</h1>
 
         <div class="upload-area" id="uploadArea">
-            <p style="margin-bottom: 15px;">拖拽图片到此处或点击上传</p>
-            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">选择图片</button>
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <p style="margin-bottom: 20px; font-size: 18px; font-weight: 500; color: var(--text-primary); padding: 0 10px;">拖拽图片到此处或点击上传</p>
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                选择图片
+            </button>
             <input type="file" id="fileInput" multiple accept="image/*">
-            <p style="margin-top: 15px; color: #666; font-size: 12px;">支持 JPG、PNG、GIF 等格式，可一次选择多张</p>
+            <p style="margin-top: 20px; color: var(--text-secondary); font-size: 14px; padding: 0 10px;">支持 JPG、PNG、GIF 等格式，可一次选择多张</p>
         </div>
 
         <div class="images-container">
             <div class="edit-area">
                 <div class="section-title">编辑区域</div>
                 <div id="editList" class="edit-list">
-                    <div class="empty-state">暂无图片，请先上传图片</div>
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        <p>暂无图片，请先上传图片</p>
+                    </div>
                 </div>
             </div>
 
             <div class="preview-area">
                 <div class="section-title">预览区域</div>
                 <div id="previewContainer">
-                    <div class="empty-state">预览区域将显示拼接后的效果</div>
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <p>预览区域将显示拼接后的效果</p>
+                    </div>
                 </div>
                 <div class="action-buttons" id="actionButtons" style="display: none;">
                     <button class="action-btn export-btn" onclick="exportImage()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
                         <span id="exportText">导出图片</span>
                     </button>
-                    <button class="action-btn clear-btn" onclick="clearAll()">清空所有</button>
+                    <button class="action-btn clear-btn" onclick="clearAll()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        清空所有
+                    </button>
                 </div>
             </div>
         </div>
@@ -591,7 +983,16 @@
         function renderImages() {
             const editList = document.getElementById('editList');
             if (images.length === 0) {
-                editList.innerHTML = '<div class="empty-state">暂无图片，请先上传图片</div>';
+                editList.innerHTML = `
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        <p>暂无图片，请先上传图片</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -606,9 +1007,22 @@
                             <div class="crop-handle bottom" data-resize="bottom" data-img-id="${img.id}" id="handle-bottom-${img.id}"></div>
                         </div>
                         <div class="image-controls">
-                            ${index > 0 ? `<button class="control-btn move-btn" onclick="moveImage(${index}, -1)">↑</button>` : ''}
-                            ${index < images.length - 1 ? `<button class="control-btn move-btn" onclick="moveImage(${index}, 1)">↓</button>` : ''}
-                            <button class="control-btn remove-btn" onclick="removeImage(${index})">×</button>
+                            ${index > 0 ? `<button class="control-btn move-btn" onclick="moveImage(${index}, -1)" title="上移">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="18 15 12 9 6 15"></polyline>
+                                </svg>
+                            </button>` : ''}
+                            ${index < images.length - 1 ? `<button class="control-btn move-btn" onclick="moveImage(${index}, 1)" title="下移">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>` : ''}
+                            <button class="control-btn remove-btn" onclick="removeImage(${index})" title="删除">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -624,9 +1038,13 @@
 
                 // 初始化容器和遮罩
                 imgElement.onload = () => {
-                    const ratio = container.offsetWidth / img.width;
                     updateImageDisplay(img);
                 };
+
+                // 确保图片已加载才更新显示
+                if (imgElement.complete) {
+                    updateImageDisplay(img);
+                }
             });
 
             // 为所有拖拽手柄添加事件监听
@@ -838,7 +1256,18 @@
             const actionButtons = document.getElementById('actionButtons');
 
             if (images.length === 0) {
-                previewContainer.innerHTML = '<div class="empty-state">预览区域将显示拼接后的效果</div>';
+                previewContainer.innerHTML = `
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <p>预览区域将显示拼接后的效果</p>
+                    </div>
+                `;
                 actionButtons.style.display = 'none';
                 return;
             }
@@ -890,7 +1319,7 @@
                         const previewCtx = previewCanvas.getContext('2d');
 
                         // 根据容器宽度调整预览尺寸，考虑设备像素比以获得更高分辨率
-                        const containerWidth = previewContainer.offsetWidth;
+                        const containerWidth = Math.min(previewContainer.offsetWidth, window.innerWidth - 40); // 确保不超出视窗
                         const dpr = window.devicePixelRatio || 1; // 获取设备像素比
                         const scale = containerWidth / maxWidth;
 
@@ -1027,11 +1456,20 @@
         function setViewportHeight() {
             const vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+            // 移动端重新计算图片显示
+            if (window.innerWidth <= 768) {
+                images.forEach(img => {
+                    updateImageDisplay(img);
+                });
+            }
         }
 
         setViewportHeight();
         window.addEventListener('resize', setViewportHeight);
-        window.addEventListener('orientationchange', setViewportHeight);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(setViewportHeight, 100); // 延迟执行以确保方向改变完成
+        });
 
         // 解析URL参数
         function parseURLParams() {
