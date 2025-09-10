@@ -84,6 +84,13 @@ index.html?img=https://example.com/image1.jpg&img=https://example.com/image2.png
 - 原生 JavaScript
 - Canvas API
 
+## 开发规范
+
+```bash
+uvx pre-commit install
+uvx pre-commit run
+```
+
 ## 📄 许可证
 
 MIT License

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -92,7 +93,7 @@
             background-color: #fff;
             border-radius: 12px;
             padding: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .edit-area {
@@ -110,75 +111,92 @@
             color: #2c3e50;
         }
 
+        /* 图片项容器 - 移除所有间距，使其紧密贴合 */
         .image-item {
-            margin-bottom: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 10px;
+            margin: 0;
+            border: none;
+            padding: 0;
             position: relative;
-            background-color: #fafafa;
+            background-color: transparent;
+            transition: height 0.3s ease;
         }
 
+        /* 裁剪容器 - 无间距、无边框 */
         .image-crop-container {
             position: relative;
             width: 100%;
             max-width: 400px;
-            margin: 0 auto 20px;
-            overflow: visible;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            margin: 0 auto;
+            overflow: hidden;
+            /* 限制手柄不超出范围 */
+            border: none;
             background-color: #f9f9f9;
             touch-action: none;
+            transition: height 0.3s ease;
         }
 
-        /* 裁剪容器的遮罩层 */
+        /* 裁剪容器的遮罩层 - 隐藏超出裁剪区域的部分 */
         .image-mask {
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
             overflow: hidden;
-            border-radius: 4px;
+            transition: height 0.3s ease, top 0.3s ease;
         }
 
         .image-crop-container img {
             width: 100%;
             display: block;
             pointer-events: none;
+            position: relative;
+            transition: transform 0.3s ease;
         }
 
+        /* 裁剪区域指示器 - 仅作为视觉参考 */
         .crop-area {
             position: absolute;
             border: 2px solid #007aff;
-            background-color: rgba(0, 122, 255, 0.25);
+            background-color: rgba(0, 122, 255, 0.15);
             cursor: move;
             width: 100%;
             touch-action: none;
+            pointer-events: none;
+            /* 不再直接交互 */
+            z-index: 5;
         }
 
+        /* 拖拽手柄 - 限制在图片范围内 */
         .crop-handle {
             position: absolute;
-            width: 90px;
-            height: 35px;
+            width: 80px;
+            height: 30px;
             background-color: #007aff;
             border: 2px solid #fff;
-            border-radius: 18px;
+            border-radius: 15px;
             touch-action: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s ease;
+            z-index: 10;
+            cursor: row-resize;
+            pointer-events: auto;
         }
 
         .crop-handle:active {
-            transform: scale(1.1);
+            transform: scale(1.15);
+            background-color: #0056b3;
         }
 
         .crop-handle.top {
-            top: -17px;
-            left: 50%;
+            top: 0;
+            left: 39%;
             transform: translateX(-50%);
             cursor: n-resize;
         }
 
         .crop-handle.bottom {
-            bottom: -17px;
-            left: 50%;
+            bottom: 0;
+            left: 61%;
             transform: translateX(-50%);
             cursor: s-resize;
         }
@@ -199,41 +217,45 @@
         /* 触摸设备上增加触摸区域 */
         @media (hover: none) and (pointer: coarse) {
             .crop-handle {
-                width: 120px;
-                height: 40px;
-                border-radius: 20px;
-            }
-            
-            .crop-handle.top {
-                top: -20px;
-            }
-            
-            .crop-handle.bottom {
-                bottom: -20px;
+                width: 100px;
+                height: 35px;
+                border-radius: 18px;
             }
 
-            .crop-handle::before {
-                font-size: 22px;
+            .crop-handle.top::before,
+            .crop-handle.bottom::before {
+                font-size: 18px;
             }
         }
 
+        /* 控制按钮组 - 浮动在图片内部 */
         .image-controls {
-            margin-top: 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
             display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
+            gap: 6px;
+            z-index: 15;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .control-btn {
-            padding: 10px 16px;
-            font-size: 14px;
+            padding: 8px 12px;
+            font-size: 13px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
             font-weight: 500;
             -webkit-tap-highlight-color: transparent;
+            opacity: 0.9;
+        }
+
+        .control-btn:hover {
+            opacity: 1;
         }
 
         .control-btn:active {
@@ -334,8 +356,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* 移动端样式优化 */
@@ -379,8 +406,7 @@
                 font-size: 14px;
             }
 
-            .preview-canvas {
-            }
+            .preview-canvas {}
         }
 
         /* 横屏模式优化 */
@@ -395,8 +421,7 @@
                 margin-bottom: 10px;
             }
 
-            .preview-canvas {
-            }
+            .preview-canvas {}
         }
 
         /* 触摸提示 */
@@ -419,10 +444,11 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🖼️ 图片拼接工具</h1>
-        
+
         <div class="upload-area" id="uploadArea">
             <p style="margin-bottom: 15px;">拖拽图片到此处或点击上传</p>
             <button class="upload-btn" onclick="document.getElementById('fileInput').click()">选择图片</button>
@@ -437,7 +463,7 @@
                     <div class="empty-state">暂无图片，请先上传图片</div>
                 </div>
             </div>
-            
+
             <div class="preview-area">
                 <div class="section-title">预览区域</div>
                 <div id="previewContainer">
@@ -479,7 +505,7 @@
             touchHint.style.left = x + 'px';
             touchHint.style.top = (y - 40) + 'px';
             touchHint.classList.add('show');
-            
+
             setTimeout(() => {
                 touchHint.classList.remove('show');
             }, 2000);
@@ -532,12 +558,12 @@
                                 cropHeight: img.height,
                                 name: file.name
                             });
-                            
+
                             processedCount++;
                             if (processedCount === fileArray.length) {
                                 renderImages();
                                 updatePreview();
-                                
+
                                 if (isTouchDevice && images.length === fileArray.length) {
                                     showTouchHint('上下拖动绿框调整裁剪区域', window.innerWidth / 2, 200);
                                 }
@@ -570,86 +596,121 @@
             }
 
             editList.innerHTML = images.map((img, index) => `
-                <div class="image-item" data-id="${img.id}">
+                <div class="image-item" data-id="${img.id}" id="item-${img.id}">
                     <div class="image-crop-container" id="container-${img.id}">
-                        <div class="image-mask">
+                        <div class="image-mask" id="mask-${img.id}">
                             <img src="${img.src}" alt="${img.name}" id="img-${img.id}">
                         </div>
-                        <div class="crop-area" id="crop-${img.id}" style="top: ${img.cropTop}px; height: ${img.cropHeight}px;">
-                            <div class="crop-handle top" data-resize="top"></div>
-                            <div class="crop-handle bottom" data-resize="bottom"></div>
+                        <div class="crop-area" id="crop-${img.id}">
+                            <div class="crop-handle top" data-resize="top" data-img-id="${img.id}" id="handle-top-${img.id}"></div>
+                            <div class="crop-handle bottom" data-resize="bottom" data-img-id="${img.id}" id="handle-bottom-${img.id}"></div>
                         </div>
-                    </div>
-                    <div class="image-controls">
-                        ${index > 0 ? `<button class="control-btn move-btn" onclick="moveImage(${index}, -1)">↑ 上移</button>` : ''}
-                        ${index < images.length - 1 ? `<button class="control-btn move-btn" onclick="moveImage(${index}, 1)">↓ 下移</button>` : ''}
-                        <button class="control-btn remove-btn" onclick="removeImage(${index})">删除</button>
+                        <div class="image-controls">
+                            ${index > 0 ? `<button class="control-btn move-btn" onclick="moveImage(${index}, -1)">↑</button>` : ''}
+                            ${index < images.length - 1 ? `<button class="control-btn move-btn" onclick="moveImage(${index}, 1)">↓</button>` : ''}
+                            <button class="control-btn remove-btn" onclick="removeImage(${index})">×</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
 
-            // 添加裁剪交互
+            // 添加裁剪交互并初始化显示
             images.forEach(img => {
-                const cropArea = document.getElementById(`crop-${img.id}`);
                 const container = document.getElementById(`container-${img.id}`);
                 const imgElement = document.getElementById(`img-${img.id}`);
-                
-                // 调整容器高度
+                const mask = document.getElementById(`mask-${img.id}`);
+                const cropArea = document.getElementById(`crop-${img.id}`);
+                const itemElement = document.getElementById(`item-${img.id}`);
+
+                // 初始化容器和遮罩
                 imgElement.onload = () => {
                     const ratio = container.offsetWidth / img.width;
-                    const scaledHeight = img.height * ratio;
-                    container.style.height = scaledHeight + 'px';
-                    const mask = container.querySelector('.image-mask');
-                    if (mask) {
-                        mask.style.height = scaledHeight + 'px';
-                    }
-                    // 修正：用缩放后的高度更新裁剪区域的初始高度
-                    cropArea.style.height = (img.cropHeight * ratio) + 'px';
-                    // 确保初始 top 也正确（虽然默认为0，但以防万一）
-                    cropArea.style.top = (img.cropTop * ratio) + 'px';
+                    updateImageDisplay(img);
                 };
+            });
 
-                // 统一的事件处理开始
-                function handleStart(e) {
-                    const coords = getEventCoordinates(e);
-                    
-                    if (e.touches) {
-                        touchIdentifier = e.touches[0].identifier;
-                    }
+            // 为所有拖拽手柄添加事件监听
+            document.querySelectorAll('.crop-handle').forEach(handle => {
+                handle.addEventListener('mousedown', handleStart);
+                handle.addEventListener('touchstart', handleStart, { passive: false });
+            });
 
-                    if (e.target.classList.contains('crop-handle')) {
+            // 统一的事件处理开始
+            function handleStart(e) {
+                const coords = getEventCoordinates(e);
+
+                if (e.touches) {
+                    touchIdentifier = e.touches[0].identifier;
+                }
+
+                if (e.target.classList.contains('crop-handle')) {
+                    const imgId = e.target.dataset.imgId;
+                    const img = images.find(i => i.id == imgId);
+                    if (img) {
                         currentResizing = {
                             img: img,
                             type: e.target.dataset.resize,
-                            cropArea: cropArea
+                            startY: coords.y,
+                            startTop: img.cropTop,
+                            startHeight: img.cropHeight,
+                            container: document.getElementById(`container-${img.id}`)
                         };
-                        startY = coords.y;
-                        startTop = img.cropTop;
-                        startHeight = img.cropHeight;
-                    } else {
-                        currentDragging = img;
-                        startY = coords.y;
-                        startTop = img.cropTop;
+
+                        // 记录初始滚动位置
+                        currentResizing.initialScrollTop = window.scrollY;
+                        currentResizing.containerTop = currentResizing.container.getBoundingClientRect().top + window.scrollY;
                     }
-                    
-                    e.preventDefault();
-                    e.stopPropagation();
                 }
 
-                // 鼠标事件
-                cropArea.addEventListener('mousedown', handleStart);
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
 
-                // 触摸事件
-                cropArea.addEventListener('touchstart', handleStart, { passive: false });
-            });
+        // 更新图片显示（实时更新裁剪效果）
+        function updateImageDisplay(img) {
+            const container = document.getElementById(`container-${img.id}`);
+            const mask = document.getElementById(`mask-${img.id}`);
+            const imgElement = document.getElementById(`img-${img.id}`);
+            const cropArea = document.getElementById(`crop-${img.id}`);
+            const itemElement = document.getElementById(`item-${img.id}`);
+            const topHandle = document.getElementById(`handle-top-${img.id}`);
+            const bottomHandle = document.getElementById(`handle-bottom-${img.id}`);
+
+            if (!container || !mask || !imgElement) return;
+
+            const ratio = container.offsetWidth / img.width;
+            const scaledCropHeight = img.cropHeight * ratio;
+            const scaledCropTop = img.cropTop * ratio;
+            const scaledTotalHeight = img.height * ratio;
+
+            // 更新容器高度为裁剪区域高度（实现贴合效果）
+            container.style.height = scaledCropHeight + 'px';
+            itemElement.style.height = scaledCropHeight + 'px';
+
+            // 更新遮罩层位置和高度
+            mask.style.height = scaledTotalHeight + 'px';
+            mask.style.top = -scaledCropTop + 'px';
+
+            // 裁剪区域指示器始终填满容器
+            cropArea.style.top = '0px';
+            cropArea.style.height = scaledCropHeight + 'px';
+
+            // 更新手柄位置，使其紧贴容器边界
+            if (topHandle) {
+                topHandle.style.top = '0px';
+            }
+            if (bottomHandle) {
+                bottomHandle.style.bottom = '0px';
+            }
         }
 
         // 统一的移动处理
         function handleMove(e) {
-            if (!currentDragging && !currentResizing) return;
+            if (!currentResizing) return;
 
             const coords = getEventCoordinates(e);
-            
+
             // 检查是否是正确的触摸点
             if (e.touches && touchIdentifier !== null) {
                 let found = false;
@@ -662,57 +723,81 @@
                 if (!found) return;
             }
 
-            if (currentDragging) {
-                const deltaY = coords.y - startY;
-                const img = currentDragging;
-                const container = document.getElementById(`container-${img.id}`);
-                const ratio = container.offsetWidth / img.width;
-                
-                let newTop = startTop + deltaY / ratio;
-                newTop = Math.max(0, Math.min(newTop, img.height - img.cropHeight));
-                
-                img.cropTop = newTop;
-                document.getElementById(`crop-${img.id}`).style.top = (newTop * ratio) + 'px';
-                
-                updatePreview();
-            }
-            
             if (currentResizing) {
-                const deltaY = coords.y - startY;
-                const { img, type, cropArea } = currentResizing;
-                const container = document.getElementById(`container-${img.id}`);
+                const deltaY = coords.y - currentResizing.startY;
+                const { img, type, container } = currentResizing;
                 const ratio = container.offsetWidth / img.width;
-                
+
+                // 记录调整前的容器高度
+                const oldContainerHeight = container.offsetHeight;
+
                 if (type === 'top') {
-                    let newTop = startTop + deltaY / ratio;
-                    let newHeight = startHeight - deltaY / ratio;
-                    
-                    if (newHeight >= 50 && newTop >= 0) {
-                        img.cropTop = newTop;
-                        img.cropHeight = newHeight;
+                    // 拖动上边手柄时，改变cropTop和cropHeight
+                    let deltaPx = deltaY / ratio;
+                    let newTop = currentResizing.startTop + deltaPx;
+                    let newHeight = currentResizing.startHeight - deltaPx;
+
+                    // 限制范围
+                    newTop = Math.max(0, newTop);
+                    newTop = Math.min(newTop, img.height - 50);
+                    newHeight = Math.max(50, newHeight);
+                    newHeight = Math.min(newHeight, img.height - newTop);
+
+                    img.cropTop = newTop;
+                    img.cropHeight = newHeight;
+
+                    // 实时更新显示
+                    updateImageDisplay(img);
+
+                    // 保持图片视觉位置不变（调整滚动位置）
+                    const newContainerHeight = container.offsetHeight;
+                    const heightDiff = oldContainerHeight - newContainerHeight;
+
+                    // 当拖动上边手柄时，需要调整滚动位置以保持图片位置不变
+                    if (heightDiff !== 0) {
+                        const currentScroll = window.scrollY;
+                        const containerTop = container.getBoundingClientRect().top + currentScroll;
+                        const itemIndex = images.findIndex(i => i.id === img.id);
+
+                        // 只调整当前图片之前的滚动
+                        if (itemIndex > 0) {
+                            // 不需要调整，因为容器高度变化会自动推动下面的内容
+                        } else {
+                            // 第一张图片，保持其顶部位置
+                            window.scrollTo(0, currentScroll - heightDiff);
+                        }
                     }
+
                 } else if (type === 'bottom') {
-                    let newHeight = startHeight + deltaY / ratio;
-                    
-                    if (newHeight >= 50 && img.cropTop + newHeight <= img.height) {
-                        img.cropHeight = newHeight;
-                    }
+                    // 拖动下边手柄时，只改变cropHeight
+                    let deltaPx = deltaY / ratio;
+                    let newHeight = currentResizing.startHeight + deltaPx;
+
+                    // 限制范围
+                    newHeight = Math.max(50, newHeight);
+                    newHeight = Math.min(newHeight, img.height - img.cropTop);
+
+                    img.cropHeight = newHeight;
+
+                    // 实时更新显示
+                    updateImageDisplay(img);
                 }
-                
-                cropArea.style.top = (img.cropTop * ratio) + 'px';
-                cropArea.style.height = (img.cropHeight * ratio) + 'px';
-                
+
                 updatePreview();
             }
-            
+
             e.preventDefault();
         }
 
         // 统一的结束处理
         function handleEnd(e) {
-            currentDragging = null;
             currentResizing = null;
             touchIdentifier = null;
+
+            // 结束时刷新所有图片显示
+            images.forEach(img => {
+                updateImageDisplay(img);
+            });
         }
 
         // 鼠标移动和释放
@@ -728,9 +813,15 @@
         function moveImage(index, direction) {
             const newIndex = index + direction;
             if (newIndex >= 0 && newIndex < images.length) {
+                // 保存当前滚动位置
+                const currentScroll = window.scrollY;
+
                 [images[index], images[newIndex]] = [images[newIndex], images[index]];
                 renderImages();
                 updatePreview();
+
+                // 恢复滚动位置
+                window.scrollTo(0, currentScroll);
             }
         }
 
@@ -745,24 +836,24 @@
         function updatePreview() {
             const previewContainer = document.getElementById('previewContainer');
             const actionButtons = document.getElementById('actionButtons');
-            
+
             if (images.length === 0) {
                 previewContainer.innerHTML = '<div class="empty-state">预览区域将显示拼接后的效果</div>';
                 actionButtons.style.display = 'none';
                 return;
             }
-            
+
             actionButtons.style.display = 'flex';
-            
+
             // 计算总高度
             let totalHeight = 0;
             let maxWidth = 0;
-            
+
             images.forEach(img => {
                 totalHeight += img.cropHeight;
                 maxWidth = Math.max(maxWidth, img.width);
             });
-            
+
             // 创建高分辨率canvas以确保图片质量
             const canvas = document.createElement('canvas');
             const dpr = window.devicePixelRatio || 1;
@@ -770,19 +861,19 @@
             canvas.height = totalHeight * dpr;
             const ctx = canvas.getContext('2d');
             ctx.scale(dpr, dpr);
-            
+
             // 设置高质量渲染
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
-            
+
             // 绘制图片
             let loadedCount = 0;
-            
+
             images.forEach((imgData, index) => {
                 const img = new Image();
                 img.onload = () => {
                     const y = images.slice(0, index).reduce((sum, i) => sum + i.cropHeight, 0);
-                    
+
                     ctx.drawImage(
                         img,
                         0, imgData.cropTop,
@@ -790,33 +881,33 @@
                         (maxWidth - imgData.width) / 2, y,
                         imgData.width, imgData.cropHeight
                     );
-                    
+
                     loadedCount++;
                     if (loadedCount === images.length) {
                         // 显示预览
                         const previewCanvas = document.createElement('canvas');
                         previewCanvas.className = 'preview-canvas';
                         const previewCtx = previewCanvas.getContext('2d');
-                        
+
                         // 根据容器宽度调整预览尺寸，考虑设备像素比以获得更高分辨率
                         const containerWidth = previewContainer.offsetWidth;
                         const dpr = window.devicePixelRatio || 1; // 获取设备像素比
                         const scale = containerWidth / maxWidth;
-            
+
                         // 设置canvas的实际尺寸（考虑设备像素比）
                         previewCanvas.width = containerWidth * dpr;
                         previewCanvas.height = totalHeight * scale * dpr;
-                        
+
                         // 设置canvas的CSS尺寸
                         previewCanvas.style.width = containerWidth + 'px';
                         previewCanvas.style.height = (totalHeight * scale) + 'px';
-                        
+
                         // 缩放上下文以适应高DPI
                         previewCtx.scale(dpr, dpr);
-                        
+
                         // 绘制时使用CSS尺寸
                         previewCtx.drawImage(canvas, 0, 0, containerWidth, totalHeight * scale);
-                        
+
                         previewContainer.innerHTML = '';
                         previewContainer.appendChild(previewCanvas);
                     }
@@ -828,22 +919,22 @@
         // 导出图片
         function exportImage() {
             if (images.length === 0) return;
-            
+
             // 更新按钮状态
             const exportBtn = document.querySelector('.export-btn');
             const exportText = document.getElementById('exportText');
             exportBtn.disabled = true;
             exportText.innerHTML = '处理中<span class="loading-spinner"></span>';
-            
+
             // 计算总高度和最大宽度
             let totalHeight = 0;
             let maxWidth = 0;
-            
+
             images.forEach(img => {
                 totalHeight += img.cropHeight;
                 maxWidth = Math.max(maxWidth, img.width);
             });
-            
+
             // 创建高分辨率导出canvas
             const canvas = document.createElement('canvas');
             const dpr = window.devicePixelRatio || 1;
@@ -851,19 +942,19 @@
             canvas.height = totalHeight * dpr;
             const ctx = canvas.getContext('2d');
             ctx.scale(dpr, dpr);
-            
+
             // 设置高质量渲染
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
-            
+
             // 绘制所有图片
             let loadedCount = 0;
-            
+
             images.forEach((imgData, index) => {
                 const img = new Image();
                 img.onload = () => {
                     const y = images.slice(0, index).reduce((sum, i) => sum + i.cropHeight, 0);
-                    
+
                     ctx.drawImage(
                         img,
                         0, imgData.cropTop,
@@ -871,7 +962,7 @@
                         (maxWidth - imgData.width) / 2, y,
                         imgData.width, imgData.cropHeight
                     );
-                    
+
                     loadedCount++;
                     if (loadedCount === images.length) {
                         // 导出
@@ -893,7 +984,7 @@
                             } else {
                                 downloadImage(blob);
                             }
-                            
+
                             // 恢复按钮状态
                             exportBtn.disabled = false;
                             exportText.textContent = '导出图片';
@@ -937,7 +1028,7 @@
             const vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
         }
-        
+
         setViewportHeight();
         window.addEventListener('resize', setViewportHeight);
         window.addEventListener('orientationchange', setViewportHeight);
@@ -946,33 +1037,33 @@
         function parseURLParams() {
             const params = new URLSearchParams(window.location.search);
             const imgParams = params.getAll('img');
-            
+
             if (imgParams.length > 0) {
                 // 显示加载提示
                 const loadingDiv = document.createElement('div');
                 loadingDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 10px; z-index: 1000;';
                 loadingDiv.innerHTML = '正在加载网络图片...<span class="loading-spinner"></span>';
                 document.body.appendChild(loadingDiv);
-                
+
                 let loadedCount = 0;
                 let errorCount = 0;
-                
+
                 imgParams.forEach((imgUrl, index) => {
                     // 处理图片URL
                     const processedUrl = decodeURIComponent(imgUrl);
-                    
+
                     // 创建图片元素
                     const img = new Image();
                     img.crossOrigin = 'anonymous'; // 尝试处理跨域
-                    
-                    img.onload = function() {
+
+                    img.onload = function () {
                         // 创建canvas来处理跨域图片
                         const canvas = document.createElement('canvas');
                         canvas.width = img.width;
                         canvas.height = img.height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0);
-                        
+
                         try {
                             const dataUrl = canvas.toDataURL('image/png');
                             images.push({
@@ -988,34 +1079,34 @@
                             console.error('图片转换失败（可能是跨域限制）:', e);
                             errorCount++;
                         }
-                        
+
                         loadedCount++;
                         checkLoadComplete();
                     };
-                    
-                    img.onerror = function() {
+
+                    img.onerror = function () {
                         console.error('图片加载失败:', processedUrl);
                         errorCount++;
                         loadedCount++;
                         checkLoadComplete();
                     };
-                    
+
                     // 设置图片源
                     img.src = processedUrl;
                 });
-                
+
                 function checkLoadComplete() {
                     if (loadedCount === imgParams.length) {
                         document.body.removeChild(loadingDiv);
-                        
+
                         if (images.length > 0) {
                             renderImages();
                             updatePreview();
-                            
+
                             if (errorCount > 0) {
                                 alert(`成功加载 ${images.length} 张图片，${errorCount} 张图片加载失败（可能是跨域限制或链接无效）`);
                             }
-                            
+
                             if (isTouchDevice && images.length > 0) {
                                 setTimeout(() => {
                                     showTouchHint('上下拖动绿框调整裁剪区域', window.innerWidth / 2, 200);
@@ -1033,4 +1124,5 @@
         window.addEventListener('DOMContentLoaded', parseURLParams);
     </script>
 </body>
+
 </html>
